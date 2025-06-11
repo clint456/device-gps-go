@@ -9,57 +9,47 @@ description: "GPS Device for location tracking"
 
 deviceResources:
   - name: "latitude"
-    description: "GPS Latitude in decimal degrees"
+    description: "GPS Latitude in human-readable format (degrees, minutes, seconds)"
     attributes:
       { primaryTable: "LOCATION" }
     properties:
-      valueType: "Float64"
+      valueType: "String"
       readWrite: "R"
-      units: "degrees"
-      floatEncoding: "eNotation"
 
   - name: "longitude"
-    description: "GPS Longitude in decimal degrees"
+    description: "GPS Longitude in human-readable format (degrees, minutes, seconds)"
     attributes:
       { primaryTable: "LOCATION" }
     properties:
-      valueType: "Float64"
+      valueType: "String"
       readWrite: "R"
-      units: "degrees"
-      floatEncoding: "eNotation"
 
   - name: "altitude"
-    description: "GPS Altitude above sea level"
+    description: "GPS Altitude above sea level in human-readable format"
     attributes:
       { primaryTable: "LOCATION" }
     properties:
-      valueType: "Float64"
+      valueType: "String"
       readWrite: "R"
-      units: "meters"
-      floatEncoding: "eNotation"
 
   - name: "speed"
-    description: "GPS Speed over ground"
+    description: "GPS Speed over ground in human-readable format"
     attributes:
       { primaryTable: "MOTION" }
     properties:
-      valueType: "Float64"
+      valueType: "String"
       readWrite: "R"
-      units: "km/h"
-      floatEncoding: "eNotation"
 
   - name: "course"
-    description: "GPS Course over ground"
+    description: "GPS Course over ground in human-readable format with direction"
     attributes:
       { primaryTable: "MOTION" }
     properties:
-      valueType: "Float64"
+      valueType: "String"
       readWrite: "R"
-      units: "degrees"
-      floatEncoding: "eNotation"
 
   - name: "utc_time"
-    description: "GPS UTC Time"
+    description: "GPS UTC Time in human-readable format (HH:MM:SS.sss)"
     attributes:
       { primaryTable: "TIME" }
     properties:
@@ -67,30 +57,28 @@ deviceResources:
       readWrite: "R"
 
   - name: "fix_quality"
-    description: "GPS Fix Quality (0=invalid, 1=valid)"
+    description: "GPS Fix Quality in human-readable format"
     attributes:
       { primaryTable: "STATUS" }
     properties:
-      valueType: "Int32"
+      valueType: "String"
       readWrite: "R"
 
   - name: "satellites_used"
-    description: "Number of satellites used in fix"
+    description: "Number of satellites used in fix in human-readable format"
     attributes:
       { primaryTable: "STATUS" }
     properties:
-      valueType: "Int32"
+      valueType: "String"
       readWrite: "R"
 
   - name: "hdop"
-    description: "Horizontal Dilution of Precision"
+    description: "Horizontal Dilution of Precision in human-readable format with quality assessment"
     attributes:
       { primaryTable: "STATUS" }
     properties:
-      valueType: "Float64"
+      valueType: "String"
       readWrite: "R"
-      units: "meters"
-      floatEncoding: "eNotation"
 
   - name: "gps_status"
     description: "GPS Status (ACTIVE, WARNING, DISCONNECTED)"

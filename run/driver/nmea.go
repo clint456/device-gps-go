@@ -418,26 +418,287 @@ func ParsNMEAZDA(strZDA string, length int) *NMEA_ZDA {
 
 // ParsNMEAGLL 解析GLL语句
 func ParsNMEAGLL(strGLL string, length int) *NMEA_GLL {
-	// 实现解析GLL语句的逻辑
-	return nil
+	if length < 10 {
+		return nil
+	}
+
+	// 验证校验和
+	if !ValidateNMEAChecksum(strGLL, length) {
+		return nil
+	}
+
+	// 分割字段
+	fields := strings.Split(strGLL, ",")
+	if len(fields) < 7 {
+		return nil
+	}
+
+	gll := &NMEA_GLL{}
+
+	// 解析TalkerID和Type
+	if len(fields[0]) >= 6 {
+		copy(gll.Nmea.TalkerID[:], fields[0][1:3])
+		copy(gll.Nmea.Type[:], fields[0][3:6])
+	}
+
+	// 解析纬度
+	if len(fields[1]) > 0 && len(fields[1]) <= 11 {
+		copy(gll.Lat[:], fields[1])
+	}
+
+	// 解析纬度方向
+	if len(fields[2]) > 0 {
+		copy(gll.N_S[:], fields[2])
+	}
+
+	// 解析经度
+	if len(fields[3]) > 0 && len(fields[3]) <= 12 {
+		copy(gll.Lon[:], fields[3])
+	}
+
+	// 解析经度方向
+	if len(fields[4]) > 0 {
+		copy(gll.E_W[:], fields[4])
+	}
+
+	// 解析UTC时间
+	if len(fields[5]) > 0 && len(fields[5]) <= 10 {
+		copy(gll.UTC[:], fields[5])
+	}
+
+	// 解析状态
+	if len(fields[6]) > 0 {
+		copy(gll.Status[:], fields[6])
+	}
+
+	// 解析模式指示（如果存在）
+	if len(fields) > 7 && len(fields[7]) > 0 {
+		copy(gll.ModeInd[:], fields[7])
+	}
+
+	return gll
 }
 
 // ParsNMEAVTG 解析VTG语句
 func ParsNMEAVTG(strVTG string, length int) *NMEA_VTG {
-	// 实现解析VTG语句的逻辑
-	return nil
+	if length < 10 {
+		return nil
+	}
+
+	// 验证校验和
+	if !ValidateNMEAChecksum(strVTG, length) {
+		return nil
+	}
+
+	// 分割字段
+	fields := strings.Split(strVTG, ",")
+	if len(fields) < 9 {
+		return nil
+	}
+
+	vtg := &NMEA_VTG{}
+
+	// 解析TalkerID和Type
+	if len(fields[0]) >= 6 {
+		copy(vtg.Nmea.TalkerID[:], fields[0][1:3])
+		copy(vtg.Nmea.Type[:], fields[0][3:6])
+	}
+
+	// 解析对地航向（真北）
+	if len(fields[1]) > 0 && len(fields[1]) <= 6 {
+		copy(vtg.COGT[:], fields[1])
+	}
+
+	// 解析固定字段：真
+	if len(fields[2]) > 0 {
+		copy(vtg.COGTT[:], fields[2])
+	}
+
+	// 解析对地航向（磁北）
+	if len(fields[3]) > 0 && len(fields[3]) <= 6 {
+		copy(vtg.COGM[:], fields[3])
+	}
+
+	// 解析固定字段：磁场
+	if len(fields[4]) > 0 {
+		copy(vtg.COGMM[:], fields[4])
+	}
+
+	// 解析对地速度（节）
+	if len(fields[5]) > 0 && len(fields[5]) <= 4 {
+		copy(vtg.SOGN[:], fields[5])
+	}
+
+	// 解析固定字段：节
+	if len(fields[6]) > 0 {
+		copy(vtg.SOGNN[:], fields[6])
+	}
+
+	// 解析对地速度（km/h）
+	if len(fields[7]) > 0 && len(fields[7]) <= 4 {
+		copy(vtg.SOGK[:], fields[7])
+	}
+
+	// 解析固定字段：千米每小时
+	if len(fields[8]) > 0 {
+		copy(vtg.SOGKK[:], fields[8])
+	}
+
+	// 解析模式指示（如果存在）
+	if len(fields) > 9 && len(fields[9]) > 0 {
+		copy(vtg.ModeInd[:], fields[9])
+	}
+
+	return vtg
 }
 
 // ParsNMEAGSA 解析GSA语句
 func ParsNMEAGSA(strGSA string, length int) *NMEA_GSA {
-	// 实现解析GSA语句的逻辑
-	return nil
+	if length < 10 {
+		return nil
+	}
+
+	// 验证校验和
+	if !ValidateNMEAChecksum(strGSA, length) {
+		return nil
+	}
+
+	// 分割字段
+	fields := strings.Split(strGSA, ",")
+	if len(fields) < 18 {
+		return nil
+	}
+
+	gsa := &NMEA_GSA{}
+
+	// 解析TalkerID和Type
+	if len(fields[0]) >= 6 {
+		copy(gsa.Nmea.TalkerID[:], fields[0][1:3])
+		copy(gsa.Nmea.Type[:], fields[0][3:6])
+	}
+
+	// 解析模式
+	if len(fields[1]) > 0 {
+		copy(gsa.Mode[:], fields[1])
+	}
+
+	// 解析定位模式
+	if len(fields[2]) > 0 {
+		copy(gsa.FixMode[:], fields[2])
+	}
+
+	// 解析卫星标识号（字段3-14）
+	for i := 0; i < 12 && i+3 < len(fields); i++ {
+		if len(fields[i+3]) > 0 && len(fields[i+3]) <= 2 {
+			copy(gsa.SatID[i][:], fields[i+3])
+		}
+	}
+
+	// 解析PDOP
+	if len(fields[15]) > 0 && len(fields[15]) <= 5 {
+		copy(gsa.PDOP[:], fields[15])
+	}
+
+	// 解析HDOP
+	if len(fields[16]) > 0 && len(fields[16]) <= 5 {
+		copy(gsa.HDOP[:], fields[16])
+	}
+
+	// 解析VDOP
+	if len(fields[17]) > 0 && len(fields[17]) <= 5 {
+		copy(gsa.VDOP[:], fields[17])
+	}
+
+	// 解析系统标识符（如果存在）
+	if len(fields) > 18 && len(fields[18]) > 0 {
+		copy(gsa.SystemID[:], fields[18])
+	}
+
+	return gsa
 }
 
 // ParsNMEAGSV 解析GSV语句
 func ParsNMEAGSV(strGSV string, length int) *NMEA_GSV {
-	// 实现解析GSV语句的逻辑
-	return nil
+	if length < 10 {
+		return nil
+	}
+
+	// 验证校验和
+	if !ValidateNMEAChecksum(strGSV, length) {
+		return nil
+	}
+
+	// 分割字段
+	fields := strings.Split(strGSV, ",")
+	if len(fields) < 4 {
+		return nil
+	}
+
+	gsv := &NMEA_GSV{}
+
+	// 解析TalkerID和Type
+	if len(fields[0]) >= 6 {
+		copy(gsv.Nmea.TalkerID[:], fields[0][1:3])
+		copy(gsv.Nmea.Type[:], fields[0][3:6])
+	}
+
+	// 解析语句总数
+	if len(fields[1]) > 0 {
+		copy(gsv.TotalNumSen[:], fields[1])
+	}
+
+	// 解析语句号
+	if len(fields[2]) > 0 {
+		copy(gsv.SenNum[:], fields[2])
+	}
+
+	// 解析可视卫星总数
+	if len(fields[3]) > 0 && len(fields[3]) <= 2 {
+		copy(gsv.TotalNumSat[:], fields[3])
+	}
+
+	// 解析卫星信息（每个卫星4个字段：ID、仰角、方位角、载噪比）
+	satIndex := 0
+	for i := 4; i < len(fields) && satIndex < 4; {
+		if i+3 < len(fields) {
+			// 卫星标识号
+			if len(fields[i]) > 0 && len(fields[i]) <= 2 {
+				copy(gsv.SatStatus[satIndex].SatID[:], fields[i])
+			}
+			// 仰角
+			if len(fields[i+1]) > 0 && len(fields[i+1]) <= 2 {
+				copy(gsv.SatStatus[satIndex].SatElev[:], fields[i+1])
+			}
+			// 方位角
+			if len(fields[i+2]) > 0 && len(fields[i+2]) <= 3 {
+				copy(gsv.SatStatus[satIndex].SatAz[:], fields[i+2])
+			}
+			// 载噪比
+			if len(fields[i+3]) > 0 && len(fields[i+3]) <= 2 {
+				copy(gsv.SatStatus[satIndex].SatCN0[:], fields[i+3])
+			}
+			satIndex++
+			i += 4
+		} else {
+			break
+		}
+	}
+
+	// 解析信号标识符（如果存在）
+	lastFieldIndex := len(fields) - 1
+	if lastFieldIndex > 4 {
+		// 检查最后一个字段是否包含*（校验和标记）
+		lastField := fields[lastFieldIndex]
+		if strings.Contains(lastField, "*") {
+			// 提取*之前的部分作为信号标识符
+			parts := strings.Split(lastField, "*")
+			if len(parts[0]) > 0 && len(parts[0]) <= 1 {
+				copy(gsv.SignalID[:], parts[0])
+			}
+		}
+	}
+
+	return gsv
 }
 
 // ParsNMEAGGA 解析GGA语句

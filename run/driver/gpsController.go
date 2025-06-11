@@ -14,6 +14,11 @@ const BufSize = 2048
 
 type LCX6XZ struct {
 	NMEA_RMC  *NMEA_RMC
+	NMEA_GGA  *NMEA_GGA
+	NMEA_GLL  *NMEA_GLL
+	NMEA_VTG  *NMEA_VTG
+	NMEA_GSA  *NMEA_GSA
+	NMEA_GSV  *NMEA_GSV
 	ResData   []byte
 	mutex     sync.Mutex
 	uartAckCh chan struct{}
@@ -149,6 +154,7 @@ func parseNMEASentence(sentence []byte, lcx6xz *LCX6XZ) error {
 	case NMEA_GGA_TYPE:
 		gga := ParsNMEAGGA(sentenceStr, len(sentenceStr))
 		if gga != nil {
+			lcx6xz.NMEA_GGA = gga // 存储GGA数据
 			fmt.Printf("✅ GGA: 时间=%s, 纬度=%s%s, 经度=%s%s, 质量=%s, 卫星数=%s\n",
 				trimNullBytes(gga.UTC[:]), trimNullBytes(gga.Lat[:]), trimNullBytes(gga.N_S[:]),
 				trimNullBytes(gga.Lon[:]), trimNullBytes(gga.E_W[:]),
@@ -157,6 +163,7 @@ func parseNMEASentence(sentence []byte, lcx6xz *LCX6XZ) error {
 	case NMEA_GLL_TYPE:
 		gll := ParsNMEAGLL(sentenceStr, len(sentenceStr))
 		if gll != nil {
+			lcx6xz.NMEA_GLL = gll // 存储GLL数据
 			fmt.Printf("✅ GLL: 纬度=%s%s, 经度=%s%s, 时间=%s, 状态=%s\n",
 				trimNullBytes(gll.Lat[:]), trimNullBytes(gll.N_S[:]),
 				trimNullBytes(gll.Lon[:]), trimNullBytes(gll.E_W[:]),
@@ -165,6 +172,7 @@ func parseNMEASentence(sentence []byte, lcx6xz *LCX6XZ) error {
 	case NMEA_GSA_TYPE:
 		gsa := ParsNMEAGSA(sentenceStr, len(sentenceStr))
 		if gsa != nil {
+			lcx6xz.NMEA_GSA = gsa // 存储GSA数据
 			fmt.Printf("✅ GSA: 模式=%s, 定位模式=%s, PDOP=%s, HDOP=%s, VDOP=%s\n",
 				trimNullBytes(gsa.Mode[:]), trimNullBytes(gsa.FixMode[:]),
 				trimNullBytes(gsa.PDOP[:]), trimNullBytes(gsa.HDOP[:]), trimNullBytes(gsa.VDOP[:]))
@@ -172,6 +180,7 @@ func parseNMEASentence(sentence []byte, lcx6xz *LCX6XZ) error {
 	case NMEA_GSV_TYPE:
 		gsv := ParsNMEAGSV(sentenceStr, len(sentenceStr))
 		if gsv != nil {
+			lcx6xz.NMEA_GSV = gsv // 存储GSV数据
 			fmt.Printf("✅ GSV: 总语句数=%s, 语句号=%s, 可视卫星数=%s\n",
 				trimNullBytes(gsv.TotalNumSen[:]), trimNullBytes(gsv.SenNum[:]),
 				trimNullBytes(gsv.TotalNumSat[:]))
@@ -179,6 +188,7 @@ func parseNMEASentence(sentence []byte, lcx6xz *LCX6XZ) error {
 	case NMEA_VTG_TYPE:
 		vtg := ParsNMEAVTG(sentenceStr, len(sentenceStr))
 		if vtg != nil {
+			lcx6xz.NMEA_VTG = vtg // 存储VTG数据
 			fmt.Printf("✅ VTG: 航向=%s, 速度(节)=%s, 速度(km/h)=%s\n",
 				trimNullBytes(vtg.COGT[:]), trimNullBytes(vtg.SOGN[:]), trimNullBytes(vtg.SOGK[:]))
 		}
