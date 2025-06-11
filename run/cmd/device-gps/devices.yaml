@@ -1,0 +1,23 @@
+# Device list for GPS Device Service
+deviceList:
+  - name: "GPS-Device-01"
+    profileName: "GPS-Device"
+    description: "GPS Device connected via UART"
+    labels:
+      - "gps"
+      - "uart"
+      - "location"
+    protocols:
+      UART:
+        deviceLocation: "/dev/ttyUSB0"
+        baudRate: "9600"
+        dataBits: "8"
+        stopBits: "1"
+        parity: "none"
+    autoEvents:
+      - interval: "5s"
+        onChange: false
+        sourceName: "location"
+      - interval: "10s"
+        onChange: false
+        sourceName: "status"

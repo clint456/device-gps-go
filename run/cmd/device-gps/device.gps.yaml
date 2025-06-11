@@ -1,0 +1,189 @@
+name: "GPS-Device"
+manufacturer: "Generic"
+model: "GPS-Receiver"
+labels:
+  - "gps"
+  - "location"
+  - "navigation"
+description: "GPS Device for location tracking"
+
+deviceResources:
+  - name: "latitude"
+    description: "GPS Latitude in decimal degrees"
+    attributes:
+      { primaryTable: "LOCATION" }
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "degrees"
+      minimum: "-90.0"
+      maximum: "90.0"
+      floatEncoding: "eNotation"
+
+  - name: "longitude"
+    description: "GPS Longitude in decimal degrees"
+    attributes:
+      { primaryTable: "LOCATION" }
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "degrees"
+      minimum: "-180.0"
+      maximum: "180.0"
+      floatEncoding: "eNotation"
+
+  - name: "altitude"
+    description: "GPS Altitude above sea level"
+    attributes:
+      { primaryTable: "LOCATION" }
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "meters"
+      floatEncoding: "eNotation"
+
+  - name: "speed"
+    description: "GPS Speed over ground"
+    attributes:
+      { primaryTable: "MOTION" }
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "km/h"
+      minimum: "0.0"
+      floatEncoding: "eNotation"
+
+  - name: "course"
+    description: "GPS Course over ground"
+    attributes:
+      { primaryTable: "MOTION" }
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "degrees"
+      minimum: "0.0"
+      maximum: "360.0"
+      floatEncoding: "eNotation"
+
+  - name: "utc_time"
+    description: "GPS UTC Time"
+    attributes:
+      { primaryTable: "TIME" }
+    properties:
+      valueType: "String"
+      readWrite: "R"
+
+  - name: "fix_quality"
+    description: "GPS Fix Quality (0=invalid, 1=valid)"
+    attributes:
+      { primaryTable: "STATUS" }
+    properties:
+      valueType: "Int32"
+      readWrite: "R"
+      minimum: "0"
+      maximum: "2"
+
+  - name: "satellites_used"
+    description: "Number of satellites used in fix"
+    attributes:
+      { primaryTable: "STATUS" }
+    properties:
+      valueType: "Int32"
+      readWrite: "R"
+      minimum: "0"
+      maximum: "32"
+
+  - name: "hdop"
+    description: "Horizontal Dilution of Precision"
+    attributes:
+      { primaryTable: "STATUS" }
+    properties:
+      valueType: "Float64"
+      readWrite: "R"
+      units: "meters"
+      floatEncoding: "eNotation"
+
+  - name: "gps_status"
+    description: "GPS Status (ACTIVE, WARNING, DISCONNECTED)"
+    attributes:
+      { primaryTable: "STATUS" }
+    properties:
+      valueType: "String"
+      readWrite: "R"
+
+deviceCommands:
+  - name: "location"
+    readWrite: "R"
+    resourceOperations:
+      - { deviceResource: "latitude" }
+      - { deviceResource: "longitude" }
+      - { deviceResource: "altitude" }
+
+  - name: "motion"
+    readWrite: "R"
+    resourceOperations:
+      - { deviceResource: "speed" }
+      - { deviceResource: "course" }
+
+  - name: "status"
+    readWrite: "R"
+    resourceOperations:
+      - { deviceResource: "fix_quality" }
+      - { deviceResource: "satellites_used" }
+      - { deviceResource: "hdop" }
+      - { deviceResource: "gps_status" }
+
+  - name: "all_data"
+    readWrite: "R"
+    resourceOperations:
+      - { deviceResource: "latitude" }
+      - { deviceResource: "longitude" }
+      - { deviceResource: "altitude" }
+      - { deviceResource: "speed" }
+      - { deviceResource: "course" }
+      - { deviceResource: "utc_time" }
+      - { deviceResource: "fix_quality" }
+      - { deviceResource: "satellites_used" }
+      - { deviceResource: "hdop" }
+      - { deviceResource: "gps_status" }
+
+coreCommands:
+  - name: "location"
+    get: true
+    path: "/api/v3/device/name/{deviceName}/location"
+    responses:
+      - code: "200"
+        description: "Get GPS location data"
+        expectedValues: ["latitude", "longitude", "altitude"]
+      - code: "503"
+        description: "service unavailable"
+
+  - name: "motion"
+    get: true
+    path: "/api/v3/device/name/{deviceName}/motion"
+    responses:
+      - code: "200"
+        description: "Get GPS motion data"
+        expectedValues: ["speed", "course"]
+      - code: "503"
+        description: "service unavailable"
+
+  - name: "status"
+    get: true
+    path: "/api/v3/device/name/{deviceName}/status"
+    responses:
+      - code: "200"
+        description: "Get GPS status data"
+        expectedValues: ["fix_quality", "satellites_used", "hdop", "gps_status"]
+      - code: "503"
+        description: "service unavailable"
+
+  - name: "all_data"
+    get: true
+    path: "/api/v3/device/name/{deviceName}/all_data"
+    responses:
+      - code: "200"
+        description: "Get all GPS data"
+        expectedValues: ["latitude", "longitude", "altitude", "speed", "course", "utc_time", "fix_quality", "satellites_used", "hdop", "gps_status"]
+      - code: "503"
+        description: "service unavailable"
