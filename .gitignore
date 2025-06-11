@@ -1,6 +1,6 @@
 *~
 *.log
-example/cmd/device-simple/device-simple
+run/cmd/device-gps/device-simple
 glide.lock
 .idea
 *.iml

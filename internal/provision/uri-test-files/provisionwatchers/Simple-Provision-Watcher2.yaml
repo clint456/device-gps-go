@@ -1,5 +1,5 @@
 name: Simple-Provision-Watcher2
-serviceName: device-simple
+serviceName: device-gps
 labels:
   - simple
 identifiers:

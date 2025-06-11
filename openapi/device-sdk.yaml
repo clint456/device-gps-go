@@ -994,7 +994,7 @@ paths:
               example:
                 apiVersion: "v3"
                 timestamp: "Mon, 02 Jan 2006 15:04:05 MST"
-                serviceName: "device-simple"
+                serviceName: "device-gps"
         '500':
           description: Interval Server Error
           headers:
@@ -1025,7 +1025,7 @@ paths:
                 apiVersion: "v3"
                 version: "4.0.0"
                 "sdk_version": "4.0.0"
-                serviceName: "device-simple"
+                serviceName: "device-gps"
         '500':
           description: Interval Server Error
           headers:

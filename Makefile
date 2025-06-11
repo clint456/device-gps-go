@@ -7,7 +7,7 @@ ENABLE_PIE=true
 
 ARCH=$(shell uname -m)
 
-MICROSERVICES=example/cmd/device-simple/device-simple
+MICROSERVICES=run/cmd/device-gps/device-gps
 .PHONY: $(MICROSERVICES)
 
 VERSION=$(shell cat ./VERSION 2>/dev/null || echo 0.0.0)
@@ -37,15 +37,15 @@ tidy:
 
 # CGO is enabled by default and cause docker builds to fail due to no gcc,
 # but is required for test with -race, so must disable it for the builds only
-example/cmd/device-simple/device-simple:
-	CGO_ENABLED=0  go build $(GOFLAGS) -o $@ ./example/cmd/device-simple
+run/cmd/device-gps/device-gps:
+	CGO_ENABLED=0  go build $(GOFLAGS) -o $@ ./run/cmd/device-gps
 
 docker:
 	docker build \
-		-f example/cmd/device-simple/Dockerfile \
+		-f run/cmd/device-gps/Dockerfile \
 		--label "git_sha=$(GIT_SHA)" \
-		-t edgexfoundry/device-simple:$(GIT_SHA) \
-		-t edgexfoundry/device-simple:$(DOCKER_TAG) \
+		-t edgexfoundry/device-gps:$(GIT_SHA) \
+		-t edgexfoundry/device-gps:$(DOCKER_TAG) \
 		.
 
 unittest:

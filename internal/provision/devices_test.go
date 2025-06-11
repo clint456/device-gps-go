@@ -24,10 +24,10 @@ func Test_processDevices(t *testing.T) {
 		secretProvider     interfaces.SecretProvider
 		expectedNumDevices int
 	}{
-		{"valid load device from file", path.Join("..", "..", "example", "cmd", "device-simple", "res", "devices", "simple-device.yml"), nil, 2},
+		{"valid load device from file", path.Join("..", "..", "example", "cmd", "device-gps", "res", "devices", "simple-device.yml"), nil, 2},
 		{"valid load devices from uri", "https://raw.githubusercontent.com/edgexfoundry/device-virtual-go/main/cmd/res/devices/devices.yaml", nil, 5},
 		{"invalid load device empty path", "", nil, 0},
-		{"invalid load device from file", path.Join("..", "..", "example", "cmd", "device-simple", "res", "devices", "bogus.yml"), nil, 0},
+		{"invalid load device from file", path.Join("..", "..", "example", "cmd", "device-gps", "res", "devices", "bogus.yml"), nil, 0},
 		{"invalid load device invalid uri", "https://raw.githubusercontent.com/edgexfoundry/device-sdk-go/main/example/cmd/device-simple/res/devices/bogus.yml", nil, 0},
 	}
 	for _, tt := range tests {

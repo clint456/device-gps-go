@@ -1,4 +1,4 @@
-name: edgex-device-simple
+name: edgex-device-gps
 # The snap to derive the runtime rootfs from, here core18 corresponds to a 
 # minimal Ubuntu 18.04 Server rootfs
 base: core18
@@ -6,7 +6,7 @@ type: app
 adopt-info: version
 license: Apache-2.0
 title: EdgeX Simple Device Service
-summary: Demonstrate the Device SDK go in EdgeX using device-simple
+summary: Demonstrate the Device SDK go in EdgeX using device-gps
 description: |
   device-simple is an example EdgeX Device Service built using the 
   device-sdk-go.
@@ -31,15 +31,15 @@ apps:
     # need any of the env vars, but if this was a c program or used cgo, we 
     # would need adapter: full
     adapter: none
-    command: bin/device-simple --registry $CONFIG_PRO_ARG $CONF_ARG
+    command: bin/device-gps --registry $CONFIG_PRO_ARG $CONF_ARG
     # Since we can't include the colon ':' characters in the command above,
     # we need to specify the consul address in an env var like so
     # see https://bugs.launchpad.net/snapd/+bug/1827392 for more details
     environment:
       CONFIG_PRO_ARG: "--cp=consul.http://localhost:8500"
-      CONF_ARG: "--configDir=$SNAP_DATA/config/device-simple/res"
-      DEVICE_DEVICESDIR: "$SNAP_DATA/config/device-simple/res/devices"
-      DEVICE_PROFILESDIR: "$SNAP_DATA/config/device-simple/res/profiles"
+      CONF_ARG: "--configDir=$SNAP_DATA/config/device-gps/res"
+      DEVICE_DEVICESDIR: "$SNAP_DATA/config/device-gps/res/devices"
+      DEVICE_PROFILESDIR: "$SNAP_DATA/config/device-gps/res/profiles"
     # The service is a simple service that is directly exec'd and expected to
     # always run in a single long-lived process
     daemon: simple

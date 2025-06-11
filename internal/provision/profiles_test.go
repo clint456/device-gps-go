@@ -166,14 +166,14 @@ func Test_processProfiles(t *testing.T) {
 		expectedNumProfiles int
 		expectedEdgexErrMsg string
 	}{
-		{"valid load profile from file, profile exists", path.Join("..", "..", "example", "cmd", "device-simple", "res", "profiles", "Simple-Driver.yaml"), nil, "Simple-Device", simpleProfile, nil, 0, ""},
-		{"valid load profile from file, profile does not exist in metadata", path.Join("..", "..", "example", "cmd", "device-simple", "res", "profiles", "Simple-Driver.yaml"), nil, "Simple-Device", responses.DeviceProfileResponse{}, errors.NewCommonEdgeXWrapper(goErrors.New("could not find profile")), 1, ""},
+		{"valid load profile from file, profile exists", path.Join("..", "..", "example", "cmd", "device-gps", "res", "profiles", "Simple-Driver.yaml"), nil, "Simple-Device", simpleProfile, nil, 0, ""},
+		{"valid load profile from file, profile does not exist in metadata", path.Join("..", "..", "example", "cmd", "device-gps", "res", "profiles", "Simple-Driver.yaml"), nil, "Simple-Device", responses.DeviceProfileResponse{}, errors.NewCommonEdgeXWrapper(goErrors.New("could not find profile")), 1, ""},
 		{"valid load profile from uri, profile exists", "https://raw.githubusercontent.com/edgexfoundry/device-sdk-go/main/example/cmd/device-simple/res/profiles/Simple-Driver.yaml", nil, "Simple-Device", simpleProfile, nil, 0, ""},
 		{"valid load profile from uri, profile does not exist in metadata", "https://raw.githubusercontent.com/edgexfoundry/device-sdk-go/main/example/cmd/device-simple/res/profiles/Simple-Driver.yaml", nil, "Simple-Device", responses.DeviceProfileResponse{}, errors.NewCommonEdgeXWrapper(goErrors.New("could not find profile")), 1, ""},
 		{"invalid load empty profile from file", "", nil, "Simple-Device", responses.DeviceProfileResponse{}, errors.NewCommonEdgeXWrapper(goErrors.New("could not find profile")), 0, ""},
-		{"invalid load profile from bogus file", path.Join("..", "..", "example", "cmd", "device-simple", "res", "profiles", "bogus.yaml"), nil, "Simple-Device", responses.DeviceProfileResponse{}, nil, 0, ""},
+		{"invalid load profile from bogus file", path.Join("..", "..", "example", "cmd", "device-gps", "res", "profiles", "bogus.yaml"), nil, "Simple-Device", responses.DeviceProfileResponse{}, nil, 0, ""},
 		{"invalid load profile from bogus uri", "https://raw.githubusercontent.com/edgexfoundry/device-sdk-go/main/example/cmd/device-simple/res/profiles/bogus.yaml", nil, "Simple-Device", responses.DeviceProfileResponse{}, nil, 0, ""},
-		{"invalid load profile from file, duplicate profile", path.Join("..", "..", "example", "cmd", "device-simple", "res", "profiles", "Simple-Driver.yaml"), nil, "Simple-Device", profile, nil, 0, "Profile testProfile has already existed in cache"},
+		{"invalid load profile from file, duplicate profile", path.Join("..", "..", "example", "cmd", "device-gps", "res", "profiles", "Simple-Driver.yaml"), nil, "Simple-Device", profile, nil, 0, "Profile testProfile has already existed in cache"},
 		{"invalid load profile from uri, duplicate profile", "https://raw.githubusercontent.com/edgexfoundry/device-sdk-go/main/example/cmd/device-simple/res/profiles/Simple-Driver.yaml", nil, "Simple-Device", profile, nil, 0, "Profile testProfile has already existed in cache"},
 	}
 	for _, tt := range tests {
