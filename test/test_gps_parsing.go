@@ -1,7 +1,9 @@
-package main
+package test
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/edgexfoundry/device-sdk-go/v4/run/driver"
 )
@@ -20,8 +22,7 @@ func main() {
 		"$GBVTG,000.00,T,,M,0.00,N,0.00,K,A*2F",
 	}
 
-	// 创建GPS设备实例
-	lcx6xz := &driver.LCX6XZ{}
+	// GPS设备实例将在实际解析中使用
 
 	fmt.Println("\n📡 测试NMEA语句解析:")
 	fmt.Println("--------------------")
@@ -67,11 +68,8 @@ func main() {
 		}
 	}
 
-	fmt.Println("\n🔄 测试Driver数据转换:")
-	fmt.Println("----------------------")
-
-	// 创建Driver实例进行测试
-	gpsDriver := &driver.Driver{}
+	fmt.Println("\n🔄 测试坐标转换:")
+	fmt.Println("------------------")
 
 	// 测试坐标转换
 	testCoordinates := []struct {
@@ -86,7 +84,6 @@ func main() {
 	}
 
 	for _, coord := range testCoordinates {
-		// 注意：convertDMSToDecimal是私有方法，这里我们手动实现转换逻辑
 		decimal := convertDMSToDecimal(coord.dms, coord.direction)
 		fmt.Printf("%s %s -> %.6f°\n", coord.desc, coord.dms, decimal)
 	}
@@ -103,4 +100,56 @@ func trimNullBytes(data []byte) string {
 		}
 	}
 	return string(data)
+}
+
+// convertDMSToDecimal 将度分秒格式转换为十进制度数
+func convertDMSToDecimal(dmsStr, direction string) float64 {
+	if dmsStr == "" {
+		return 0.0
+	}
+
+	// 移除空字符
+	dmsStr = strings.TrimSpace(dmsStr)
+	if len(dmsStr) < 4 {
+		return 0.0
+	}
+
+	// 解析度分格式 (ddmm.mmmm 或 dddmm.mmmm)
+	var degrees, minutes float64
+	var err error
+
+	if strings.Contains(dmsStr, ".") {
+		// 查找小数点位置
+		dotIndex := strings.Index(dmsStr, ".")
+		if dotIndex >= 4 {
+			// 经度格式 dddmm.mmmm
+			degrees, err = strconv.ParseFloat(dmsStr[:dotIndex-2], 64)
+			if err != nil {
+				return 0.0
+			}
+			minutes, err = strconv.ParseFloat(dmsStr[dotIndex-2:], 64)
+			if err != nil {
+				return 0.0
+			}
+		} else if dotIndex >= 3 {
+			// 纬度格式 ddmm.mmmm
+			degrees, err = strconv.ParseFloat(dmsStr[:dotIndex-2], 64)
+			if err != nil {
+				return 0.0
+			}
+			minutes, err = strconv.ParseFloat(dmsStr[dotIndex-2:], 64)
+			if err != nil {
+				return 0.0
+			}
+		}
+	}
+
+	decimal := degrees + minutes/60.0
+
+	// 根据方向调整符号
+	if direction == "S" || direction == "W" {
+		decimal = -decimal
+	}
+
+	return decimal
 }
