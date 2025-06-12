@@ -14,10 +14,3 @@ deviceList:
         dataBits: "8"
         stopBits: "1"
         parity: "none"
-    autoEvents:
-      - interval: "5s"
-        onChange: false
-        sourceName: "location"
-      - interval: "10s"
-        onChange: false
-        sourceName: "status"

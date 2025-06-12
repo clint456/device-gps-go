@@ -9,14 +9,16 @@ description: "GPS Device for location tracking"
 
 deviceResources:
   - name: "latitude"
+    isHidden:  true
     description: "GPS Latitude in human-readable format (degrees, minutes, seconds)"
     attributes:
       { primaryTable: "LOCATION" }
     properties:
       valueType: "String"
       readWrite: "R"
-
+ 
   - name: "longitude"
+    isHidden:  true
     description: "GPS Longitude in human-readable format (degrees, minutes, seconds)"
     attributes:
       { primaryTable: "LOCATION" }
@@ -25,6 +27,7 @@ deviceResources:
       readWrite: "R"
 
   - name: "altitude"
+    isHidden:  true
     description: "GPS Altitude above sea level in human-readable format"
     attributes:
       { primaryTable: "LOCATION" }
@@ -33,6 +36,7 @@ deviceResources:
       readWrite: "R"
 
   - name: "speed"
+    isHidden:  true
     description: "GPS Speed over ground in human-readable format"
     attributes:
       { primaryTable: "MOTION" }
@@ -41,6 +45,7 @@ deviceResources:
       readWrite: "R"
 
   - name: "course"
+    isHidden:  true
     description: "GPS Course over ground in human-readable format with direction"
     attributes:
       { primaryTable: "MOTION" }
@@ -49,6 +54,7 @@ deviceResources:
       readWrite: "R"
 
   - name: "utc_time"
+    isHidden:  true
     description: "GPS UTC Time in human-readable format (HH:MM:SS.sss)"
     attributes:
       { primaryTable: "TIME" }
@@ -57,6 +63,7 @@ deviceResources:
       readWrite: "R"
 
   - name: "fix_quality"
+    isHidden:  true
     description: "GPS Fix Quality in human-readable format"
     attributes:
       { primaryTable: "STATUS" }
@@ -65,6 +72,7 @@ deviceResources:
       readWrite: "R"
 
   - name: "satellites_used"
+    isHidden:  true
     description: "Number of satellites used in fix in human-readable format"
     attributes:
       { primaryTable: "STATUS" }
@@ -73,6 +81,7 @@ deviceResources:
       readWrite: "R"
 
   - name: "hdop"
+    isHidden:  true
     description: "Horizontal Dilution of Precision in human-readable format with quality assessment"
     attributes:
       { primaryTable: "STATUS" }
@@ -81,12 +90,38 @@ deviceResources:
       readWrite: "R"
 
   - name: "gps_status"
+    isHidden:  true
     description: "GPS Status (ACTIVE, WARNING, DISCONNECTED)"
     attributes:
       { primaryTable: "STATUS" }
     properties:
       valueType: "String"
       readWrite: "R"
+
+  # NMEA输出速率配置相关资源
+  - name: "output_rates"
+    description: "Get all NMEA message output rates in human-readable format"
+    attributes:
+      { primaryTable: "CONFIG" }
+    properties:
+      valueType: "String"
+      readWrite: "R"
+
+  - name: "set_output_rate"
+    description: "Set NMEA message output rate (format: NMEA_TYPE:RATE, e.g., GGA:1)"
+    attributes:
+      { primaryTable: "CONFIG" }
+    properties:
+      valueType: "String"
+      readWrite: "W"
+
+  - name: "set_all_rates"
+    description: "Set all NMEA message output rates (format: GGA:1,RMC:1,GSV:5,VTG:1,GSA:1)"
+    attributes:
+      { primaryTable: "CONFIG" }
+    properties:
+      valueType: "String"
+      readWrite: "W"
 
 deviceCommands:
   - name: "location"
@@ -123,44 +158,3 @@ deviceCommands:
       - { deviceResource: "satellites_used" }
       - { deviceResource: "hdop" }
       - { deviceResource: "gps_status" }
-
-coreCommands:
-  - name: "location"
-    get: true
-    path: "/api/v3/device/name/{deviceName}/location"
-    responses:
-      - code: "200"
-        description: "Get GPS location data"
-        expectedValues: ["latitude", "longitude", "altitude"]
-      - code: "503"
-        description: "service unavailable"
-
-  - name: "motion"
-    get: true
-    path: "/api/v3/device/name/{deviceName}/motion"
-    responses:
-      - code: "200"
-        description: "Get GPS motion data"
-        expectedValues: ["speed", "course"]
-      - code: "503"
-        description: "service unavailable"
-
-  - name: "status"
-    get: true
-    path: "/api/v3/device/name/{deviceName}/status"
-    responses:
-      - code: "200"
-        description: "Get GPS status data"
-        expectedValues: ["fix_quality", "satellites_used", "hdop", "gps_status"]
-      - code: "503"
-        description: "service unavailable"
-
-  - name: "all_data"
-    get: true
-    path: "/api/v3/device/name/{deviceName}/all_data"
-    responses:
-      - code: "200"
-        description: "Get all GPS data"
-        expectedValues: ["latitude", "longitude", "altitude", "speed", "course", "utc_time", "fix_quality", "satellites_used", "hdop", "gps_status"]
-      - code: "503"
-        description: "service unavailable"

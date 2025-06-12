@@ -13,16 +13,17 @@ import (
 const BufSize = 2048
 
 type LCX6XZ struct {
-	NMEA_RMC  *NMEA_RMC
-	NMEA_GGA  *NMEA_GGA
-	NMEA_GLL  *NMEA_GLL
-	NMEA_VTG  *NMEA_VTG
-	NMEA_GSA  *NMEA_GSA
-	NMEA_GSV  *NMEA_GSV
-	ResData   []byte
-	mutex     sync.Mutex
-	uartAckCh chan struct{}
-	uartFd    io.ReadWriteCloser
+	NMEA_RMC    *NMEA_RMC
+	NMEA_GGA    *NMEA_GGA
+	NMEA_GLL    *NMEA_GLL
+	NMEA_VTG    *NMEA_VTG
+	NMEA_GSA    *NMEA_GSA
+	NMEA_GSV    *NMEA_GSV
+	OutputRates map[NMEA_SUB_ID]uint8 // 存储查询到的输出速率
+	ResData     []byte
+	mutex       sync.Mutex
+	uartAckCh   chan struct{}
+	uartFd      io.ReadWriteCloser
 }
 
 func UartRX_Task(lcx6xz *LCX6XZ) {
@@ -230,16 +231,126 @@ func ParsNMEA(buffer []byte, lcx6xz *LCX6XZ) (int, error) {
 
 // ParsBM 解析二进制协议语句
 func ParsBM(buffer []byte, lcx6xz *LCX6XZ) (int, error) {
-	// 实现二进制协议解析逻辑
-	// ...
-	return 0, errors.New("not implemented")
+	if len(buffer) < 8 {
+		return 0, errors.New("二进制消息太短")
+	}
+
+	// 检查帧头 0xF1 0xD9
+	if buffer[0] != 0xF1 || buffer[1] != 0xD9 {
+		return 0, errors.New("无效的二进制消息头")
+	}
+
+	groupID := buffer[2]
+	subID := buffer[3]
+	length := uint16(buffer[4]) | (uint16(buffer[5]) << 8)
+
+	// 检查消息长度
+	totalLen := int(6 + length + 2) // 头部6字节 + 载荷 + 校验和2字节
+	if len(buffer) < totalLen {
+		return 0, errors.New("二进制消息数据不完整")
+	}
+
+	// 验证校验和
+	checksum := QlCheckQuectel(buffer[:totalLen-2])
+	receivedChecksum := uint16(buffer[totalLen-2]) | (uint16(buffer[totalLen-1]) << 8)
+
+	if checksum != receivedChecksum {
+		return 0, fmt.Errorf("校验和错误: 期望 %04X, 实际 %04X", checksum, receivedChecksum)
+	}
+
+	// 处理不同类型的二进制消息
+	switch groupID {
+	case 0x05: // BIN_RES_GID - 响应消息
+		switch subID {
+		case 0x01: // ACK
+			fmt.Printf("✅ 收到ACK确认: GroupID=0x%02X, SubID=0x%02X\n",
+				buffer[6], buffer[7])
+		case 0x00: // NAK
+			fmt.Printf("❌ 收到NAK否认: GroupID=0x%02X, SubID=0x%02X\n",
+				buffer[6], buffer[7])
+		}
+	case 0x06: // BIN_CFG_GID - 配置消息响应
+		switch subID {
+		case 0x01: // MSG配置响应
+			if length >= 3 {
+				targetGroupID := buffer[6]
+				targetSubID := buffer[7]
+				outputRate := buffer[8]
+				fmt.Printf("📊 输出速率响应: NMEA类型=0x%02X%02X, 速率=%d\n",
+					targetGroupID, targetSubID, outputRate)
+
+				// 存储查询结果到设备结构中
+				if lcx6xz != nil {
+					lcx6xz.mutex.Lock()
+					if lcx6xz.OutputRates == nil {
+						lcx6xz.OutputRates = make(map[NMEA_SUB_ID]uint8)
+					}
+					lcx6xz.OutputRates[NMEA_SUB_ID(targetSubID)] = outputRate
+					lcx6xz.mutex.Unlock()
+				}
+			}
+		}
+	}
+
+	return totalLen, nil
+}
+
+// SendBinaryCommand 发送二进制命令到GPS设备
+func SendBinaryCommand(lcx6xz *LCX6XZ, data []byte) error {
+	if lcx6xz == nil || lcx6xz.uartFd == nil {
+		return errors.New("GPS设备未连接")
+	}
+
+	fmt.Printf("📤 发送二进制命令: %X\n", data)
+
+	_, err := lcx6xz.uartFd.Write(data)
+	if err != nil {
+		return fmt.Errorf("发送二进制命令失败: %v", err)
+	}
+
+	return nil
+}
+
+// SetNMEAOutputRate 设置NMEA消息输出速率
+func SetNMEAOutputRate(lcx6xz *LCX6XZ, nmeaType NMEA_SUB_ID, rate uint8) error {
+	// 创建设置输出速率的配置消息
+	cfgMsg := CfgMsgSetOutRate(NMEA_GID, nmeaType, rate)
+	if cfgMsg == nil {
+		return errors.New("创建配置消息失败")
+	}
+
+	// 发送配置消息
+	msgBytes := cfgMsg.ToBytes()
+	if msgBytes == nil {
+		return errors.New("转换配置消息失败")
+	}
+
+	return SendBinaryCommand(lcx6xz, msgBytes)
+}
+
+// GetNMEAOutputRate 查询NMEA消息输出速率
+func GetNMEAOutputRate(lcx6xz *LCX6XZ, nmeaType NMEA_SUB_ID) error {
+	// 创建查询输出速率的配置消息
+	cfgMsg := CfgMsgQueOutRate(NMEA_GID, nmeaType)
+	if cfgMsg == nil {
+		return errors.New("创建查询消息失败")
+	}
+
+	// 发送查询消息
+	msgBytes := cfgMsg.ToBytes()
+	if msgBytes == nil {
+		return errors.New("转换查询消息失败")
+	}
+
+	return SendBinaryCommand(lcx6xz, msgBytes)
 }
 
 // 初始化LCX6XZ
 func InitLCX6XZ() (*LCX6XZ, error) {
 	lcx6xz := &LCX6XZ{
-		ResData:   make([]byte, 1024),
-		uartAckCh: make(chan struct{}),
+		OutputRates: make(map[NMEA_SUB_ID]uint8),
+		ResData:     make([]byte, 1024),
+		uartAckCh:   make(chan struct{}),
 	}
 
 	// 配置串口

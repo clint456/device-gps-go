@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/edgexfoundry/device-sdk-go/v4/pkg/interfaces"
 	dsModels "github.com/edgexfoundry/device-sdk-go/v4/pkg/models"
@@ -108,6 +109,8 @@ func (s *Driver) HandleReadCommands(deviceName string, protocols map[string]mode
 			cv = s.getHDOP(req)
 		case "gps_status":
 			cv = s.getGPSStatus(req)
+		case "output_rates":
+			cv = s.getOutputRates(req)
 		default:
 			s.lc.Warnf("未知的资源名称: %s", req.DeviceResourceName)
 			continue
@@ -127,7 +130,34 @@ func (s *Driver) HandleReadCommands(deviceName string, protocols map[string]mode
 // command.
 func (s *Driver) HandleWriteCommands(deviceName string, protocols map[string]models.ProtocolProperties, reqs []dsModels.CommandRequest,
 	params []*dsModels.CommandValue) error {
-	s.lc.Debug("✍️ 写操作被触发")
+	s.lc.Debugf("✍️ 处理设备 %s 的写入命令", deviceName)
+
+	if s.gpsDevice == nil {
+		return fmt.Errorf("GPS设备未初始化")
+	}
+
+	for i, req := range reqs {
+		s.lc.Debugf("处理写入资源: %s", req.DeviceResourceName)
+
+		switch req.DeviceResourceName {
+		case "set_output_rate":
+			err := s.setOutputRate(req, params[i])
+			if err != nil {
+				s.lc.Errorf("设置输出速率失败: %v", err)
+				return err
+			}
+		case "set_all_rates":
+			err := s.setAllOutputRates(req, params[i])
+			if err != nil {
+				s.lc.Errorf("批量设置输出速率失败: %v", err)
+				return err
+			}
+		default:
+			s.lc.Warnf("未知的写入资源名称: %s", req.DeviceResourceName)
+			return fmt.Errorf("不支持的写入操作: %s", req.DeviceResourceName)
+		}
+	}
+
 	return nil
 }
 
@@ -493,6 +523,241 @@ func (s *Driver) getGPSStatus(req dsModels.CommandRequest) *dsModels.CommandValu
 
 	cv, _ := dsModels.NewCommandValue(req.DeviceResourceName, "String", gpsStatus)
 	return cv
+}
+
+// getOutputRates 获取所有NMEA消息输出速率
+func (s *Driver) getOutputRates(req dsModels.CommandRequest) *dsModels.CommandValue {
+	if s.gpsDevice == nil {
+		return nil
+	}
+
+	s.lc.Info("开始查询所有NMEA消息输出速率")
+
+	// 查询支持的NMEA类型及其输出速率
+	nmeaTypes := []struct {
+		sid  NMEA_SUB_ID
+		name string
+	}{
+		{NMEA_GGA_SID, "GGA"},
+		{NMEA_RMC_SID, "RMC"},
+		{NMEA_GSV_SID, "GSV"},
+		{NMEA_VTG_SID, "VTG"},
+		{NMEA_GSA_SID, "GSA"},
+	}
+
+	var rateInfos []string
+
+	for _, nmea := range nmeaTypes {
+		// 发送查询命令
+		err := GetNMEAOutputRate(s.gpsDevice, nmea.sid)
+		if err != nil {
+			s.lc.Errorf("查询%s输出速率失败: %v", nmea.name, err)
+			rateInfos = append(rateInfos, fmt.Sprintf("%s: 查询失败", nmea.name))
+			continue
+		}
+
+		// 等待响应
+		time.Sleep(200 * time.Millisecond)
+
+		// 从设备存储的查询结果中获取实际输出速率
+		s.gpsDevice.mutex.Lock()
+		if rate, exists := s.gpsDevice.OutputRates[nmea.sid]; exists {
+			var rateDesc string
+			switch rate {
+			case 0:
+				rateDesc = "禁用"
+			case 1:
+				rateDesc = "1Hz"
+			case 5:
+				rateDesc = "5Hz"
+			case 10:
+				rateDesc = "10Hz"
+			default:
+				rateDesc = fmt.Sprintf("%dHz", rate)
+			}
+			rateInfos = append(rateInfos, fmt.Sprintf("%s: %s", nmea.name, rateDesc))
+		} else {
+			rateInfos = append(rateInfos, fmt.Sprintf("%s: 未知", nmea.name))
+		}
+		s.gpsDevice.mutex.Unlock()
+
+		s.lc.Debugf("已查询%s输出速率", nmea.name)
+	}
+
+	rateInfo := strings.Join(rateInfos, ", ")
+	s.lc.Infof("查询完成，输出速率: %s", rateInfo)
+
+	cv, _ := dsModels.NewCommandValue(req.DeviceResourceName, "String", rateInfo)
+	return cv
+}
+
+// setOutputRate 设置单个NMEA消息的输出速率
+func (s *Driver) setOutputRate(req dsModels.CommandRequest, param *dsModels.CommandValue) error {
+
+	// 参数格式: "GGA:1" 或 "RMC:5"
+	configStr, ok := param.Value.(string)
+	if !ok {
+		return fmt.Errorf("参数值必须是字符串格式")
+	}
+
+	// 解析配置字符串
+	parts := strings.Split(configStr, ":")
+	if len(parts) != 2 {
+		return fmt.Errorf("无效的配置格式，应为 NMEA_TYPE:RATE")
+	}
+
+	nmeaType := strings.TrimSpace(strings.ToUpper(parts[0]))
+	rateStr := strings.TrimSpace(parts[1])
+
+	rateVal, err := strconv.ParseUint(rateStr, 10, 8)
+	if err != nil {
+		return fmt.Errorf("无效的速率值: %s", rateStr)
+	}
+	rate := uint8(rateVal)
+
+	// 转换NMEA类型为子ID
+	var subID NMEA_SUB_ID
+	switch strings.ToUpper(nmeaType) {
+	case "GGA":
+		subID = NMEA_GGA_SID
+	case "RMC":
+		subID = NMEA_RMC_SID
+	case "GSV":
+		subID = NMEA_GSV_SID
+	case "VTG":
+		subID = NMEA_VTG_SID
+	case "GSA":
+		subID = NMEA_GSA_SID
+	default:
+		return fmt.Errorf("不支持的NMEA类型: %s", nmeaType)
+	}
+
+	s.lc.Infof("设置%s消息输出速率为%d", nmeaType, rate)
+	return SetNMEAOutputRate(s.gpsDevice, subID, rate)
+}
+
+// setAllOutputRates 批量设置所有NMEA消息的输出速率
+func (s *Driver) setAllOutputRates(req dsModels.CommandRequest, param *dsModels.CommandValue) error {
+	if param == nil {
+		return fmt.Errorf("参数值为空")
+	}
+
+	// 参数格式: "GGA:1,RMC:1,GSV:5,VTG:1,GSA:1"
+	configStr, ok := param.Value.(string)
+	if !ok {
+		return fmt.Errorf("参数值必须是字符串格式")
+	}
+
+	s.lc.Infof("开始批量设置输出速率: %s", configStr)
+
+	// 解析配置字符串
+	configs, err := s.parseMultipleRateConfig(configStr)
+	if err != nil {
+		return fmt.Errorf("解析配置字符串失败: %v", err)
+	}
+
+	// 逐个设置输出速率
+	var errors []string
+	for nmeaType, rate := range configs {
+		// 转换NMEA类型为子ID
+		subID, err := s.getNMEASubID(nmeaType)
+		if err != nil {
+			errors = append(errors, fmt.Sprintf("%s: %v", nmeaType, err))
+			continue
+		}
+
+		// 发送设置命令
+		err = SetNMEAOutputRate(s.gpsDevice, subID, rate)
+		if err != nil {
+			errors = append(errors, fmt.Sprintf("%s: %v", nmeaType, err))
+			continue
+		}
+
+		s.lc.Infof("成功设置%s输出速率为%d", nmeaType, rate)
+
+		// 在设置之间添加延迟，避免设备处理不过来
+		time.Sleep(100 * time.Millisecond)
+	}
+
+	if len(errors) > 0 {
+		return fmt.Errorf("部分设置失败: %s", strings.Join(errors, "; "))
+	}
+
+	s.lc.Infof("批量设置输出速率完成")
+	return nil
+}
+
+// parseMultipleRateConfig 解析多个输出速率配置字符串
+func (s *Driver) parseMultipleRateConfig(configStr string) (map[string]uint8, error) {
+	if configStr == "" {
+		return nil, fmt.Errorf("配置字符串为空")
+	}
+
+	configs := make(map[string]uint8)
+
+	// 支持逗号分隔的配置项
+	items := strings.Split(configStr, ",")
+
+	for _, item := range items {
+		item = strings.TrimSpace(item)
+		if item == "" {
+			continue
+		}
+
+		// 支持冒号或等号分隔
+		var parts []string
+		if strings.Contains(item, ":") {
+			parts = strings.Split(item, ":")
+		} else if strings.Contains(item, "=") {
+			parts = strings.Split(item, "=")
+		} else {
+			return nil, fmt.Errorf("无效的配置项格式: %s", item)
+		}
+
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("无效的配置项格式: %s", item)
+		}
+
+		nmeaType := strings.TrimSpace(strings.ToUpper(parts[0]))
+		rateStr := strings.TrimSpace(parts[1])
+
+		rate, err := strconv.ParseUint(rateStr, 10, 8)
+		if err != nil {
+			return nil, fmt.Errorf("无效的速率值: %s", rateStr)
+		}
+
+		configs[nmeaType] = uint8(rate)
+	}
+
+	if len(configs) == 0 {
+		return nil, fmt.Errorf("未找到有效的配置项")
+	}
+
+	return configs, nil
+}
+
+// getNMEASubID 将NMEA类型字符串转换为子ID
+func (s *Driver) getNMEASubID(nmeaType string) (NMEA_SUB_ID, error) {
+	switch strings.ToUpper(nmeaType) {
+	case "GGA":
+		return NMEA_GGA_SID, nil
+	case "RMC":
+		return NMEA_RMC_SID, nil
+	case "GSV":
+		return NMEA_GSV_SID, nil
+	case "VTG":
+		return NMEA_VTG_SID, nil
+	case "GSA":
+		return NMEA_GSA_SID, nil
+	case "GLL":
+		return NMEA_GLL_SID, nil
+	case "ZDA":
+		return NMEA_ZDA_SID, nil
+	case "GST":
+		return NMEA_GST_SID, nil
+	default:
+		return 0, fmt.Errorf("未知的NMEA类型: %s", nmeaType)
+	}
 }
 
 // 工具函数
