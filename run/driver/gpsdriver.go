@@ -539,10 +539,14 @@ func (s *Driver) getOutputRates(req dsModels.CommandRequest) *dsModels.CommandVa
 		name string
 	}{
 		{NMEA_GGA_SID, "GGA"},
-		{NMEA_RMC_SID, "RMC"},
-		{NMEA_GSV_SID, "GSV"},
-		{NMEA_VTG_SID, "VTG"},
+		{NMEA_GLL_SID, "GLL"},
 		{NMEA_GSA_SID, "GSA"},
+		{NMEA_GRS_SID, "GRS"},
+		{NMEA_GSV_SID, "GSV"},
+		{NMEA_RMC_SID, "RMC"},
+		{NMEA_VTG_SID, "VTG"},
+		{NMEA_ZDA_SID, "ZDA"},
+		{NMEA_GST_SID, "GST"},
 	}
 
 	var rateInfos []string
@@ -616,19 +620,8 @@ func (s *Driver) setOutputRate(req dsModels.CommandRequest, param *dsModels.Comm
 	rate := uint8(rateVal)
 
 	// 转换NMEA类型为子ID
-	var subID NMEA_SUB_ID
-	switch strings.ToUpper(nmeaType) {
-	case "GGA":
-		subID = NMEA_GGA_SID
-	case "RMC":
-		subID = NMEA_RMC_SID
-	case "GSV":
-		subID = NMEA_GSV_SID
-	case "VTG":
-		subID = NMEA_VTG_SID
-	case "GSA":
-		subID = NMEA_GSA_SID
-	default:
+	subID, err := s.getNMEASubID(nmeaType)
+	if err != nil {
 		return fmt.Errorf("不支持的NMEA类型: %s", nmeaType)
 	}
 
@@ -741,16 +734,18 @@ func (s *Driver) getNMEASubID(nmeaType string) (NMEA_SUB_ID, error) {
 	switch strings.ToUpper(nmeaType) {
 	case "GGA":
 		return NMEA_GGA_SID, nil
-	case "RMC":
-		return NMEA_RMC_SID, nil
-	case "GSV":
-		return NMEA_GSV_SID, nil
-	case "VTG":
-		return NMEA_VTG_SID, nil
-	case "GSA":
-		return NMEA_GSA_SID, nil
 	case "GLL":
 		return NMEA_GLL_SID, nil
+	case "GSA":
+		return NMEA_GSA_SID, nil
+	case "GRS":
+		return NMEA_GRS_SID, nil
+	case "GSV":
+		return NMEA_GSV_SID, nil
+	case "RMC":
+		return NMEA_RMC_SID, nil
+	case "VTG":
+		return NMEA_VTG_SID, nil
 	case "ZDA":
 		return NMEA_ZDA_SID, nil
 	case "GST":
