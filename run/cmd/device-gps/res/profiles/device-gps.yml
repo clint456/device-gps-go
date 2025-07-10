@@ -124,8 +124,15 @@ deviceResources:
     properties:
       valueType: "String"  # 数据类型：字符串
       readWrite: "W"  # 读写权限：可写（W）
-
+      
 # 设备命令配置
+  - name: "AsyncTest" 
+    description: "测试异步上报数据"
+    attributes:
+    properties:
+      valueType: "int64"
+      readWrite: "WR"
+
 deviceCommands:
   - name: "location"  # 命令名称：获取位置
     readWrite: "R"  # 读写权限：只读（R）
