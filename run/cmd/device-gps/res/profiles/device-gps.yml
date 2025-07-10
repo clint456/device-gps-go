@@ -1,149 +1,152 @@
-name: "GPS-Device"
-manufacturer: "Generic"
-model: "GPS-Receiver"
+# 设备基本信息
+name: "GPS-Device"  # 设备名称
+manufacturer: "Generic"  # 设备制造商
+model: "GPS-Receiver"  # 设备型号
 labels:
-  - "gps"
-  - "location"
-  - "navigation"
-description: "GPS Device for location tracking"
+  - "gps"  # 标签：GPS设备
+  - "location"  # 标签：用于定位
+  - "navigation"  # 标签：用于导航
+description: "GPS Device for location tracking"  # 设备描述：用于位置跟踪的GPS设备
 
+# 设备资源配置
 deviceResources:
-  - name: "latitude"
-    isHidden:  true
-    description: "GPS Latitude in human-readable format (degrees, minutes, seconds)"
+  - name: "latitude"  # 资源名称：纬度
+    isHidden: true  # 该资源是否隐藏
+    description: "GPS Latitude in human-readable format (degrees, minutes, seconds)"  # 资源描述：以可读格式表示的GPS纬度（度、分、秒）
     attributes:
-      { primaryTable: "LOCATION" }
+      { primaryTable: "LOCATION" }  # 该资源所在的主表
     properties:
-      valueType: "String"
-      readWrite: "R"
- 
-  - name: "longitude"
-    isHidden:  true
-    description: "GPS Longitude in human-readable format (degrees, minutes, seconds)"
-    attributes:
-      { primaryTable: "LOCATION" }
-    properties:
-      valueType: "String"
-      readWrite: "R"
+      valueType: "String"  # 数据类型：字符串
+      readWrite: "R"  # 读写权限：只读（R）
 
-  - name: "altitude"
-    isHidden:  true
-    description: "GPS Altitude above sea level in human-readable format"
+  - name: "longitude"  # 资源名称：经度
+    isHidden: true  # 该资源是否隐藏
+    description: "GPS Longitude in human-readable format (degrees, minutes, seconds)"  # 资源描述：以可读格式表示的GPS经度（度、分、秒）
     attributes:
-      { primaryTable: "LOCATION" }
+      { primaryTable: "LOCATION" }  # 该资源所在的主表
     properties:
-      valueType: "String"
-      readWrite: "R"
+      valueType: "String"  # 数据类型：字符串
+      readWrite: "R"  # 读写权限：只读（R）
 
-  - name: "speed"
-    isHidden:  true
-    description: "GPS Speed over ground in human-readable format"
+  - name: "altitude"  # 资源名称：海拔
+    isHidden: true  # 该资源是否隐藏
+    description: "GPS Altitude above sea level in human-readable format"  # 资源描述：以可读格式表示的GPS海拔
     attributes:
-      { primaryTable: "MOTION" }
+      { primaryTable: "LOCATION" }  # 该资源所在的主表
     properties:
-      valueType: "String"
-      readWrite: "R"
+      valueType: "String"  # 数据类型：字符串
+      readWrite: "R"  # 读写权限：只读（R）
 
-  - name: "course"
-    isHidden:  true
-    description: "GPS Course over ground in human-readable format with direction"
+  - name: "speed"  # 资源名称：速度
+    isHidden: true  # 该资源是否隐藏
+    description: "GPS Speed over ground in human-readable format"  # 资源描述：以可读格式表示的GPS地面速度
     attributes:
-      { primaryTable: "MOTION" }
+      { primaryTable: "MOTION" }  # 该资源所在的主表
     properties:
-      valueType: "String"
-      readWrite: "R"
+      valueType: "String"  # 数据类型：字符串
+      readWrite: "R"  # 读写权限：只读（R）
 
-  - name: "utc_time"
-    isHidden:  true
-    description: "GPS UTC Time in human-readable format (HH:MM:SS.sss)"
+  - name: "course"  # 资源名称：航向
+    isHidden: true  # 该资源是否隐藏
+    description: "GPS Course over ground in human-readable format with direction"  # 资源描述：以可读格式表示的GPS航向（带方向）
     attributes:
-      { primaryTable: "TIME" }
+      { primaryTable: "MOTION" }  # 该资源所在的主表
     properties:
-      valueType: "String"
-      readWrite: "R"
+      valueType: "String"  # 数据类型：字符串
+      readWrite: "R"  # 读写权限：只读（R）
 
-  - name: "fix_quality"
-    isHidden:  true
-    description: "GPS Fix Quality in human-readable format"
+  - name: "utc_time"  # 资源名称：UTC时间
+    isHidden: true  # 该资源是否隐藏
+    description: "GPS UTC Time in human-readable format (HH:MM:SS.sss)"  # 资源描述：以可读格式表示的GPS UTC时间（时：分：秒.毫秒）
     attributes:
-      { primaryTable: "STATUS" }
+      { primaryTable: "TIME" }  # 该资源所在的主表
     properties:
-      valueType: "String"
-      readWrite: "R"
+      valueType: "String"  # 数据类型：字符串
+      readWrite: "R"  # 读写权限：只读（R）
 
-  - name: "satellites_used"
-    isHidden:  true
-    description: "Number of satellites used in fix in human-readable format"
+  - name: "fix_quality"  # 资源名称：修正质量
+    isHidden: true  # 该资源是否隐藏
+    description: "GPS Fix Quality in human-readable format"  # 资源描述：GPS定位修正质量，以可读格式表示
     attributes:
-      { primaryTable: "STATUS" }
+      { primaryTable: "STATUS" }  # 该资源所在的主表
     properties:
-      valueType: "String"
-      readWrite: "R"
+      valueType: "String"  # 数据类型：字符串
+      readWrite: "R"  # 读写权限：只读（R）
 
-  - name: "hdop"
-    isHidden:  true
-    description: "Horizontal Dilution of Precision in human-readable format with quality assessment"
+  - name: "satellites_used"  # 资源名称：使用的卫星数量
+    isHidden: true  # 该资源是否隐藏
+    description: "Number of satellites used in fix in human-readable format"  # 资源描述：以可读格式表示的GPS定位使用的卫星数量
     attributes:
-      { primaryTable: "STATUS" }
+      { primaryTable: "STATUS" }  # 该资源所在的主表
     properties:
-      valueType: "String"
-      readWrite: "R"
+      valueType: "String"  # 数据类型：字符串
+      readWrite: "R"  # 读写权限：只读（R）
 
-  - name: "gps_status"
-    isHidden:  true
-    description: "GPS Status (ACTIVE, WARNING, DISCONNECTED)"
+  - name: "hdop"  # 资源名称：水平精度
+    isHidden: true  # 该资源是否隐藏
+    description: "Horizontal Dilution of Precision in human-readable format with quality assessment"  # 资源描述：以可读格式表示的GPS水平精度，并带有质量评估
     attributes:
-      { primaryTable: "STATUS" }
+      { primaryTable: "STATUS" }  # 该资源所在的主表
     properties:
-      valueType: "String"
-      readWrite: "R"
+      valueType: "String"  # 数据类型：字符串
+      readWrite: "R"  # 读写权限：只读（R）
+
+  - name: "gps_status"  # 资源名称：GPS状态
+    isHidden: true  # 该资源是否隐藏
+    description: "GPS Status (ACTIVE, WARNING, DISCONNECTED)"  # 资源描述：GPS状态（活动、警告、断开）
+    attributes:
+      { primaryTable: "STATUS" }  # 该资源所在的主表
+    properties:
+      valueType: "String"  # 数据类型：字符串
+      readWrite: "R"  # 读写权限：只读（R）
 
   # NMEA输出速率配置相关资源
-  - name: "get_output_rates"
-    description: "Get all NMEA message output rates in human-readable format"
+  - name: "get_output_rates"  # 资源名称：获取输出速率
+    description: "Get all NMEA message output rates in human-readable format"  # 资源描述：以可读格式表示的所有NMEA消息输出速率
     attributes:
-      { primaryTable: "CONFIG" }
+      { primaryTable: "CONFIG" }  # 该资源所在的主表
     properties:
-      valueType: "String"
-      readWrite: "R"
+      valueType: "String"  # 数据类型：字符串
+      readWrite: "R"  # 读写权限：只读（R）
 
-  - name: "set_output_rate"
-    description: "Set NMEA message output rate (format: NMEA_TYPE:RATE, e.g., GGA:1)"
+  - name: "set_output_rate"  # 资源名称：设置输出速率
+    description: "Set NMEA message output rate (format: NMEA_TYPE:RATE, e.g., GGA:1)"  # 资源描述：设置NMEA消息输出速率（格式：NMEA_TYPE:速率，例如 GGA:1）
     attributes:
-      { primaryTable: "CONFIG" }
+      { primaryTable: "CONFIG" }  # 该资源所在的主表
     properties:
-      valueType: "String"
-      readWrite: "W"
+      valueType: "String"  # 数据类型：字符串
+      readWrite: "W"  # 读写权限：可写（W）
 
-  - name: "set_all_rates"
-    description: "Set all NMEA message output rates (format: GGA:1,RMC:1,GSV:5,VTG:1,GSA:1)"
+  - name: "set_all_rates"  # 资源名称：设置所有速率
+    description: "Set all NMEA message output rates (format: GGA:1,RMC:1,GSV:5,VTG:1,GSA:1)"  # 资源描述：设置所有NMEA消息输出速率（格式：GGA:1,RMC:1,GSV:5,VTG:1,GSA:1）
     attributes:
-      { primaryTable: "CONFIG" }
+      { primaryTable: "CONFIG" }  # 该资源所在的主表
     properties:
-      valueType: "String"
-      readWrite: "W"
+      valueType: "String"  # 数据类型：字符串
+      readWrite: "W"  # 读写权限：可写（W）
 
+# 设备命令配置
 deviceCommands:
-  - name: "location"
-    readWrite: "R"
+  - name: "location"  # 命令名称：获取位置
+    readWrite: "R"  # 读写权限：只读（R）
     resourceOperations:
-      - { deviceResource: "latitude" }
-      - { deviceResource: "longitude" }
-      - { deviceResource: "altitude" }
+      - { deviceResource: "latitude" }  # 获取纬度资源
+      - { deviceResource: "longitude" }  # 获取经度资源
+      - { deviceResource: "altitude" }  # 获取海拔资源
+      - { deviceResource: "utc_time" }  # 获取UTC时间资源
 
-  - name: "motion"
-    readWrite: "R"
+  - name: "motion"  # 命令名称：获取运动信息
+    readWrite: "R"  # 读写权限：只读（R）
     resourceOperations:
-      - { deviceResource: "speed" }
-      - { deviceResource: "course" }
+      - { deviceResource: "speed" }  # 获取速度资源
+      - { deviceResource: "course" }  # 获取航向资源
 
-  - name: "status"
-    readWrite: "R"
+  - name: "status"  # 命令名称：获取状态信息
+    readWrite: "R"  # 读写权限：只读（R）
     resourceOperations:
-      - { deviceResource: "fix_quality" }
-      - { deviceResource: "satellites_used" }
-      - { deviceResource: "hdop" }
-      - { deviceResource: "gps_status" }
+      - { deviceResource: "fix_quality" }  # 获取修正质量资源
+      - { deviceResource: "satellites_used" }  # 获取使用
+
 
   - name: "all_data"
     readWrite: "R"

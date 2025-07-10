@@ -1,34 +1,45 @@
+# 日志级别配置（DEBUG级别提供详细的日志信息）
 Writable:
-  LogLevel: DEBUG
+  LogLevel: DEBUG   # 设置日志详细程度（DEBUG/INFO/WARN/ERROR）
+  
+  # 阅读配置部分
   Reading:
-    ReadingUnits: true
-  Telemetry:
-    Metrics: 
-      # All service's custom metric names must be present in this list. All common metric names are in the Common Config
-      ReadCommandsExecuted: true
-Service:
-  Host: "localhost"
-  Port: 59999 # Device service are assigned the 599xx range
-  StartupMsg: device simple started
+    ReadingUnits: true  # 是否在日志或数据中包含读取单位
 
+# 遥测设置，用于追踪服务的自定义指标
+Telemetry:
+  Metrics:
+    # 自定义的服务指标名称，所有通用指标名称在Common Config中定义
+    ReadCommandsExecuted: true  # 跟踪执行的读取命令次数
+
+# 服务相关配置
+Service:
+  Host: "localhost"  # 服务运行的主机（此处为localhost，即本机）
+  Port: 58888  # 服务端口（设备服务分配的端口范围为599xx）
+
+  # 服务启动时的提示消息
+  StartupMsg: device simple started  # 启动消息
+
+# 消息总线配置
 MessageBus:
   Optional:
-    ClientId: device-gps
+    ClientId: device-gps  # 设置消息总线客户端的ID为device-gps
 
-# Example overriding of Common Config settings
+# 示例：覆盖通用配置中的设置
 Device:
-  AsyncBufferSize: 1
-  # These have common values (currently), but must be here for service local env overrides to apply when customized
-  ProfilesDir: ./res/profiles
-  DevicesDir: ./res/devices
-  # Only needed if device service implements auto provisioning
-  ProvisionWatchersDir: ./res/provisionwatchers
+  AsyncBufferSize: 1  # 设置设备的异步缓冲区大小为1
+  # 这些是目前具有通用值的设置，但必须放在这里以便于本地环境的覆盖
+  ProfilesDir: ./res/profiles  # 设备配置文件的目录
+  DevicesDir: ./res/devices  # 设备资源文件的目录
+  # 如果设备服务需要实现自动配置监视器，以下目录需要配置
+  ProvisionWatchersDir: ./res/provisionwatchers  # 自动配置监视器的目录
   Discovery:
-    Enabled: false
-    Interval: "30s"
-# Example structured custom configuration
+    Enabled: false  # 设备发现功能是否启用
+    Interval: "30s"  # 设备发现间隔，30秒一次
+
+# 示例：自定义的结构化配置
 SimpleCustom:
-  OnImageLocation: ./res/on.png
-  OffImageLocation: ./res/off.jpg
+  OnImageLocation: ./res/on.png  # 设备开启状态图片的位置
+  OffImageLocation: ./res/off.jpg  # 设备关闭状态图片的位置
   Writable:
-    DiscoverSleepDurationSecs: 3
+    DiscoverSleepDurationSecs: 3  # 设备发现时休眠的时长，单位为秒

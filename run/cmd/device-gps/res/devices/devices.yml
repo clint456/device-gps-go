@@ -1,15 +1,13 @@
-# Device list for GPS Device Service
+# GPS设备服务的设备列表
 deviceList:
-  - name: "GPS-Device-01"
-    profileName: "GPS-Device"
-    description: "GPS Device connected via UART"
-    labels:
-      - "gps"
-      - "uart"
-      - "location"
-    protocols:
-      UART:
-        deviceLocation: "/dev/ttyUSB0"
-        baudRate: 9600
-        dataBits: 8
-        ReadTimeout: 100 # 单位：毫秒
+  - name: "GPS-Device-01"  # 设备名称
+    profileName: "GPS-Device"  # 设备配置文件名称
+    description: "GPS Device connected via UART"  # 设备描述，说明该设备是通过UART连接的GPS设备
+    labels:  # 设备标签，用于标识设备的特性
+      - "gps"  # 表示该设备为GPS设备
+      - "uart"  # 表示该设备通过UART连接
+    protocols:  # 设备支持的协议
+      UART:  # 使用UART协议
+        deviceLocation: "/dev/ttyUSB0"  # 设备的串口位置（此处为Linux系统中的设备路径）
+        baudRate: 9600  # 串口的波特率，设置为9600
+        ReadTimeout: 100  # 读取超时时间，单位为毫秒
