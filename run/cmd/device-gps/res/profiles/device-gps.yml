@@ -99,7 +99,7 @@ deviceResources:
       readWrite: "R"
 
   # NMEA输出速率配置相关资源
-  - name: "output_rates"
+  - name: "get_output_rates"
     description: "Get all NMEA message output rates in human-readable format"
     attributes:
       { primaryTable: "CONFIG" }

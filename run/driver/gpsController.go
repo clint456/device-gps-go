@@ -346,7 +346,7 @@ func GetNMEAOutputRate(lcx6xz *LCX6XZ, nmeaType NMEA_SUB_ID) error {
 }
 
 // 初始化LCX6XZ
-func InitLCX6XZ() (*LCX6XZ, error) {
+func InitLCX6XZ(Name string, Baud int, Size int, ReadTimeout int) (*LCX6XZ, error) {
 	lcx6xz := &LCX6XZ{
 		OutputRates: make(map[NMEA_SUB_ID]uint8),
 		ResData:     make([]byte, 1024),
@@ -355,12 +355,12 @@ func InitLCX6XZ() (*LCX6XZ, error) {
 
 	// 配置串口
 	config := &serial.Config{
-		Name:        "/dev/ttyUSB0",
-		Baud:        9600,
-		Size:        8,
+		Name:        Name,
+		Baud:        Baud,
+		Size:        byte(Size),
 		Parity:      serial.ParityNone,
 		StopBits:    serial.Stop1,
-		ReadTimeout: 100 * time.Millisecond,
+		ReadTimeout: time.Duration(ReadTimeout) * time.Millisecond,
 	}
 
 	port, err := serial.OpenPort(config)

@@ -32,6 +32,7 @@ import (
 	dsModels "github.com/edgexfoundry/device-sdk-go/v4/pkg/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/models"
+	"github.com/spf13/cast"
 )
 
 type Driver struct {
@@ -49,11 +50,37 @@ func (s *Driver) Initialize(sdk interfaces.DeviceServiceSDK) error {
 	s.lc = sdk.LoggingClient()
 	s.asyncCh = sdk.AsyncValuesChannel()
 	s.deviceCh = sdk.DiscoveredDeviceChannel()
+	return nil
+}
+
+// Start runs device service startup tasks after the SDK has been completely
+// initialized. This allows device service to safely use DeviceServiceSDK
+// interface features in this function call
+func (s *Driver) Start() error {
+
+	// 获取 UART 配置信息
+	// 通过结构体字段访问 Protocols
+	var deviceLocation string
+	var baudRate int
+	var dataBits int
+	var ReadTimeout int
+	uartConfig, err := s.sdk.GetDeviceByName("device-ble")
+	if err != nil {
+		s.lc.Errorf("加载服务配置失败！")
+	}
+	for i, protocol := range uartConfig.Protocols {
+		deviceLocation = fmt.Sprintf("%v", protocol["deviceLocation"])
+		baudRate, _ = cast.ToIntE(protocol["baudRate"])
+		dataBits, _ = cast.ToIntE(protocol["dataBits"])
+		ReadTimeout, _ = cast.ToIntE(protocol["ReadTimeout"])
+		s.lc.Debugf("Driver.HandleReadCommands(): protocol = %v, device location = %v, baud rate = %v readTimeout=%v dataBits %v ",
+			i, deviceLocation, baudRate, ReadTimeout, dataBits)
+	}
 
 	s.lc.Info("🚀 初始化GPS设备服务")
 
 	// 初始化GPS设备
-	gpsDevice, err := InitLCX6XZ()
+	gpsDevice, err := InitLCX6XZ(deviceLocation, baudRate, ReadTimeout, dataBits)
 	if err != nil {
 		s.lc.Errorf("❌ GPS设备初始化失败: %v", err)
 		return err
@@ -62,13 +89,6 @@ func (s *Driver) Initialize(sdk interfaces.DeviceServiceSDK) error {
 	s.gpsDevice = gpsDevice
 	s.lc.Info("✅ GPS设备初始化成功")
 
-	return nil
-}
-
-// Start runs device service startup tasks after the SDK has been completely
-// initialized. This allows device service to safely use DeviceServiceSDK
-// interface features in this function call
-func (s *Driver) Start() error {
 	return nil
 }
 
@@ -109,7 +129,7 @@ func (s *Driver) HandleReadCommands(deviceName string, protocols map[string]mode
 			cv = s.getHDOP(req)
 		case "gps_status":
 			cv = s.getGPSStatus(req)
-		case "output_rates":
+		case "get_output_rates":
 			cv = s.getOutputRates(req)
 		default:
 			s.lc.Warnf("未知的资源名称: %s", req.DeviceResourceName)

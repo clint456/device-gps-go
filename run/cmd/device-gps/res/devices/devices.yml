@@ -10,7 +10,6 @@ deviceList:
     protocols:
       UART:
         deviceLocation: "/dev/ttyUSB0"
-        baudRate: "9600"
-        dataBits: "8"
-        stopBits: "1"
-        parity: "none"
+        baudRate: 9600
+        dataBits: 8
+        ReadTimeout: 100 # 单位：毫秒
