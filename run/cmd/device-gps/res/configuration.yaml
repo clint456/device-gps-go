@@ -27,7 +27,8 @@ MessageBus:
 
 # 示例：覆盖通用配置中的设置
 Device:
-  AsyncBufferSize: 1  # 设置设备的异步缓冲区大小为1
+  EnableAsyncReadings: true # 开启异步上报
+  AsyncBufferSize: 16 # 设置异步上报缓冲通道个数
   # 这些是目前具有通用值的设置，但必须放在这里以便于本地环境的覆盖
   ProfilesDir: ./res/profiles  # 设备配置文件的目录
   DevicesDir: ./res/devices  # 设备资源文件的目录
