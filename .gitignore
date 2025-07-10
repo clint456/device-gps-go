@@ -10,3 +10,4 @@ prime/
 squashfs-root/
 VERSION
 run/cmd/device-gps/device-gps
+/vendor/
