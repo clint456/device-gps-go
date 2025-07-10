@@ -122,6 +122,13 @@ deviceResources:
     properties:
       valueType: "String"
       readWrite: "W"
+      
+  - name: "AsyncTest" 
+    description: "测试异步上报数据"
+    attributes:
+    properties:
+      valueType: "int64"
+      readWrite: "WR"
 
 deviceCommands:
   - name: "location"

@@ -24,6 +24,7 @@ package driver
 import (
 	errorDefault "errors"
 	"fmt"
+	"math/rand/v2"
 	"strconv"
 	"strings"
 	"time"
@@ -31,6 +32,7 @@ import (
 	"github.com/edgexfoundry/device-sdk-go/v4/pkg/interfaces"
 	dsModels "github.com/edgexfoundry/device-sdk-go/v4/pkg/models"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/clients/logger"
+	"github.com/edgexfoundry/go-mod-core-contracts/v4/common"
 	"github.com/edgexfoundry/go-mod-core-contracts/v4/models"
 	"github.com/spf13/cast"
 )
@@ -48,9 +50,41 @@ type Driver struct {
 func (s *Driver) Initialize(sdk interfaces.DeviceServiceSDK) error {
 	s.sdk = sdk
 	s.lc = sdk.LoggingClient()
-	s.asyncCh = sdk.AsyncValuesChannel()
+	s.asyncCh = sdk.AsyncValuesChannel() // 获取异步上报通道
 	s.deviceCh = sdk.DiscoveredDeviceChannel()
+	// 启动一个 goroutine 模拟异步上报数据
+	go s.simulateAsyncReporting()
 	return nil
+}
+
+// 模拟异步主动上报数据（如温度、湿度）
+func (s *Driver) simulateAsyncReporting() {
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		deviceName := "GPS-Device-01"
+		origin := time.Now().UnixNano()
+
+		// 构造湿度 CommandValue
+		asyncValue, err := dsModels.NewCommandValue("AsyncTest", common.ValueTypeInt64, rand.Int64())
+		if err != nil {
+			s.lc.Error(fmt.Sprintf("Failed to create AsyncTest CommandValue: %v", err))
+			continue
+		}
+		asyncValue.Origin = origin
+
+		// 封装 AsyncValues
+		asyncValues := &dsModels.AsyncValues{
+			DeviceName:    deviceName,
+			CommandValues: []*dsModels.CommandValue{asyncValue},
+		}
+
+		// 推送到 SDK 的异步通道
+		s.asyncCh <- asyncValues
+
+		s.lc.Debugf("AsyncTest Values pushed: %+v", asyncValues)
+	}
 }
 
 // Start runs device service startup tasks after the SDK has been completely
