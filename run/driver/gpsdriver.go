@@ -57,7 +57,7 @@ func (s *Driver) Initialize(sdk interfaces.DeviceServiceSDK) error {
 	return nil
 }
 
-// 模拟异步主动上报数据（如温度、湿度）
+// 模拟异步主动上报数据
 func (s *Driver) simulateAsyncReporting() {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
@@ -66,7 +66,6 @@ func (s *Driver) simulateAsyncReporting() {
 		deviceName := "GPS-Device-01"
 		origin := time.Now().UnixNano()
 
-		// 构造湿度 CommandValue
 		asyncValue, err := dsModels.NewCommandValue("AsyncTest", common.ValueTypeInt64, rand.Int64())
 		if err != nil {
 			s.lc.Error(fmt.Sprintf("Failed to create AsyncTest CommandValue: %v", err))
