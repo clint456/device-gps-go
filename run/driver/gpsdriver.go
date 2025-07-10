@@ -62,25 +62,23 @@ func (s *Driver) Start() error {
 	// 通过结构体字段访问 Protocols
 	var deviceLocation string
 	var baudRate int
-	var dataBits int
 	var ReadTimeout int
-	uartConfig, err := s.sdk.GetDeviceByName("device-ble")
+	uartConfig, err := s.sdk.GetDeviceByName("GPS-Device-01")
 	if err != nil {
 		s.lc.Errorf("加载服务配置失败！")
 	}
 	for i, protocol := range uartConfig.Protocols {
 		deviceLocation = fmt.Sprintf("%v", protocol["deviceLocation"])
 		baudRate, _ = cast.ToIntE(protocol["baudRate"])
-		dataBits, _ = cast.ToIntE(protocol["dataBits"])
 		ReadTimeout, _ = cast.ToIntE(protocol["ReadTimeout"])
 		s.lc.Debugf("Driver.HandleReadCommands(): protocol = %v, device location = %v, baud rate = %v readTimeout=%v dataBits %v ",
-			i, deviceLocation, baudRate, ReadTimeout, dataBits)
+			i, deviceLocation, baudRate, ReadTimeout)
 	}
 
 	s.lc.Info("🚀 初始化GPS设备服务")
 
 	// 初始化GPS设备
-	gpsDevice, err := InitLCX6XZ(deviceLocation, baudRate, ReadTimeout, dataBits)
+	gpsDevice, err := InitLCX6XZ(deviceLocation, baudRate, ReadTimeout)
 	if err != nil {
 		s.lc.Errorf("❌ GPS设备初始化失败: %v", err)
 		return err
