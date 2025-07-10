@@ -1,6 +1,5 @@
 *~
 *.log
-run/cmd/device-gps/device-gps
 glide.lock
 .idea
 *.iml
@@ -10,3 +9,4 @@ coverage.out
 prime/
 squashfs-root/
 VERSION
+run/cmd/device-gps/device-gps
