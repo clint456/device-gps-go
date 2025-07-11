@@ -57,7 +57,7 @@ func (s *Driver) Initialize(sdk interfaces.DeviceServiceSDK) error {
 	return nil
 }
 
-// 模拟异步主动上报数据（如温度、湿度）
+// 模拟异步主动上报数据
 func (s *Driver) simulateAsyncReporting() {
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
