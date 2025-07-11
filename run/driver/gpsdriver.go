@@ -64,20 +64,28 @@ func (s *Driver) simulateAsyncReporting() {
 
 	for range ticker.C {
 		deviceName := "GPS-Device-01"
+		resourceName := "AsyncTest"
 		origin := time.Now().UnixNano()
 
 		// 构造湿度 CommandValue
-		asyncValue, err := dsModels.NewCommandValue("AsyncTest", common.ValueTypeInt64, rand.Int64())
+		asyncValue1, err := dsModels.NewCommandValue("AsyncTest", common.ValueTypeInt64, rand.Int64())
 		if err != nil {
 			s.lc.Error(fmt.Sprintf("Failed to create AsyncTest CommandValue: %v", err))
 			continue
 		}
-		asyncValue.Origin = origin
+		asyncValue2, err := dsModels.NewCommandValue("AsyncTest", common.ValueTypeInt32, rand.Int64())
+		if err != nil {
+			s.lc.Error(fmt.Sprintf("Failed to create AsyncTest CommandValue: %v", err))
+			continue
+		}
+		asyncValue1.Origin = origin
+		asyncValue2.Origin = origin
 
 		// 封装 AsyncValues
 		asyncValues := &dsModels.AsyncValues{
 			DeviceName:    deviceName,
-			CommandValues: []*dsModels.CommandValue{asyncValue},
+			SourceName:    resourceName,
+			CommandValues: []*dsModels.CommandValue{asyncValue1, asyncValue2},
 		}
 
 		// 推送到 SDK 的异步通道
